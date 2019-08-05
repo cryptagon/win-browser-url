@@ -30,10 +30,16 @@ public class BrowserUrl {
                 var elm2 = TreeWalker.RawViewWalker.GetLastChild(elm1);
 
                 // get header controls
-                var elm3 = elm2.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, ""));
+                var elm3 = TreeWalker.RawViewWalker.GetFirstChild(elm2);
+
+                // get nav bar
+                var elm4 = TreeWalker.RawViewWalker.GetNextSibling(TreeWalker.RawViewWalker.GetFirstChild(elm3));
+
+                // get edit group
+                var elm5 = elm4.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, ""));
 
                 // get edit
-                elmUrlBar = elm3.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
+                elmUrlBar = elm5.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
 
             }
             catch (Exception ex)
