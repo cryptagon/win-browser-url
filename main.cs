@@ -50,6 +50,7 @@ public class BrowserUrl {
             }
 
             System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
+            return;
         }
     }
     public static void ReadEdge()
@@ -90,6 +91,7 @@ public class BrowserUrl {
             }
 
             System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
+            return;
         }
     }
 
@@ -133,19 +135,25 @@ public class BrowserUrl {
             }
 
             System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
+            return;
         }
     }
     public static void Main(string[] args) {
-        string browser = args.Length == 0 ? "firefox" : args[0];
+        string browser = args.Length == 0 ? "chrome" : args[0];
 
-        if (browser == "chrome") {
+        if (browser == "chrome")
+        {
             ReadChrome();
-        } else if (browser == "firefox") {
+        }
+        else if (browser == "firefox")
+        {
             ReadFirefox();
-        } else {
+        }
+        else
+        {
             ReadEdge();
         }
-        
     }
 
 }
+    
