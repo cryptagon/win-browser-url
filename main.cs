@@ -6,6 +6,7 @@ public class BrowserUrl {
 
     public static void ReadChrome()
     {
+        DateTime dt = DateTime.Now;
         Process[] procsChrome = Process.GetProcessesByName("chrome");
         foreach (Process chrome in procsChrome)
         {
@@ -18,29 +19,28 @@ public class BrowserUrl {
             AutomationElement elm = AutomationElement.FromHandle(chrome.MainWindowHandle);
             bool bIncognito = elm.GetCurrentPropertyValue(AutomationElement.NameProperty).ToString().Contains("(Incognito)");
             if (bIncognito) continue;
-
+            
             // manually walk through the tree, searching using TreeScope.Descendants is too slow (even if it's more reliable)
             AutomationElement elmUrlBar = null;
             try
             {
                 var elm1 = elm.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Google Chrome"));
                 if (elm1 == null) { continue; } // not the right chrome.exe
-
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get main window
                 var elm2 = TreeWalker.RawViewWalker.GetLastChild(elm1);
-
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get header controls
                 var elm3 = TreeWalker.RawViewWalker.GetFirstChild(elm2);
-
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get nav bar
                 var elm4 = TreeWalker.RawViewWalker.GetNextSibling(TreeWalker.RawViewWalker.GetFirstChild(elm3));
-
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get edit group
                 var elm5 = elm4.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, ""));
-
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get edit
                 elmUrlBar = elm5.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
-
             }
             catch (Exception ex)
             {
@@ -54,7 +54,6 @@ public class BrowserUrl {
                 // it's not..
                 continue;
             }
-
             System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
             return;
         }
