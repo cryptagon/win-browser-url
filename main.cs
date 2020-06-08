@@ -117,16 +117,15 @@ public class BrowserUrl {
             AutomationElement elmUrlBar = null;
             try
             {
-                var elm1 = elm.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Navigation Toolbar"));
+                var elm1 = elm.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Navigation"));
                 if (elm1 == null) { continue; }
 
                 // get edit
                 elmUrlBar = elm1.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
-
             }
             catch (Exception ex)
             {
-                // Chrome has probably changed something, and above walking needs to be modified. :(
+                // FF has probably changed something, and above walking needs to be modified. :(
                 // put an assertion here or something to make sure you don't miss it
                 System.Console.WriteLine(ex);
                 continue;
