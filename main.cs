@@ -60,6 +60,65 @@ public class BrowserUrl {
     }
     public static void ReadEdge()
     {
+        DateTime dt = DateTime.Now;
+        Process[] procs = Process.GetProcessesByName("msedge");
+        foreach (Process proc in procs)
+        {
+            if (proc.MainWindowHandle == IntPtr.Zero)
+            {
+                continue;
+            }
+
+            // find the automation element
+            AutomationElement elm = AutomationElement.FromHandle(proc.MainWindowHandle);
+            bool bIncognito = elm.GetCurrentPropertyValue(AutomationElement.NameProperty).ToString().Contains("[InPrivate]");
+            if (bIncognito) continue;
+
+            // manually walk through the tree, searching using TreeScope.Descendants is too slow (even if it's more reliable)
+            AutomationElement elmUrlBar = null;
+            try
+            {
+                var elm1 = TreeWalker.RawViewWalker.GetLastChild(elm);
+                if (elm1 == null) { continue; } // not the right process
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                // get main window
+                var elm2 = TreeWalker.RawViewWalker.GetFirstChild(elm1);
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                // get browser window
+                var elm3 = TreeWalker.RawViewWalker.GetNextSibling(TreeWalker.RawViewWalker.GetFirstChild(elm2));
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                // get header bar
+                var elm4 = TreeWalker.RawViewWalker.GetFirstChild(elm3);
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                // get header bar
+                var elm5 = elm4.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "App bar"));
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                // get edit group
+                var elm6 = elm5.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ClassNameProperty, "LocationBarView"));
+                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                // get edit
+                elmUrlBar = elm6.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine(ex);
+                continue;
+            }
+
+            // make sure it's valid
+            if (elmUrlBar == null)
+            {
+                // it's not..
+                continue;
+            }
+
+            System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
+            return;
+        }
+    }
+
+    public static void ReadEdgeLegacy()
+    {
         Process[] procs = Process.GetProcessesByName("ApplicationFrameHost");
         foreach (Process proc in procs)
         {
@@ -142,8 +201,17 @@ public class BrowserUrl {
             return;
         }
     }
+    public static void GetAllProcesses()
+    {
+        Process[] procs = Process.GetProcesses();
+        foreach (Process proc in procs)
+        {
+            if (proc.ProcessName != "svchost") System.Console.WriteLine("process " + proc.ProcessName);
+        }
+    }
+
     public static void Main(string[] args) {
-        string browser = args.Length == 0 ? "chrome" : args[0];
+        string browser = args.Length == 0 ? "edge" : args[0];
 
         if (browser == "chrome")
         {
@@ -152,6 +220,10 @@ public class BrowserUrl {
         else if (browser == "firefox")
         {
             ReadFirefox();
+        }
+        else if (browser == "edge_legacy")
+        {
+            ReadEdgeLegacy();
         }
         else
         {
