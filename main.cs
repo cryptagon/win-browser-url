@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Automation;
+using UIA = Interop.UIAutomationCore;
 
 public class BrowserUrl {
 
@@ -8,12 +9,14 @@ public class BrowserUrl {
     {
         DateTime dt = DateTime.Now;
         Process[] procsChrome = Process.GetProcessesByName("chrome");
-        foreach (Process chrome in procsChrome)
         {
             if (chrome.MainWindowHandle == IntPtr.Zero)
             {
                 continue;
             }
+
+            var uia = new UIA.CUIAutomation();
+            var rootCom = uia.GetRootElement();
 
             // find the automation element
             AutomationElement elm = AutomationElement.FromHandle(chrome.MainWindowHandle);
@@ -211,11 +214,13 @@ public class BrowserUrl {
     }
 
     public static void Main(string[] args) {
-        string browser = args.Length == 0 ? "edge" : args[0];
+        string browser = args.Length == 0 ? "chrome" : args[0];
 
         if (browser == "chrome")
         {
-            ReadChrome();
+            var start = DateTime.Now;
+            for (var i = 0; i < 1; i++) ReadChrome();
+            System.Console.WriteLine("took " + DateTime.Now.Subtract(start).TotalMilliseconds + " ms");
         }
         else if (browser == "firefox")
         {
