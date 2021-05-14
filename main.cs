@@ -1,66 +1,50 @@
 using System;
 using System.Diagnostics;
-using System.Windows.Automation;
-using UIA = Interop.UIAutomationCore;
+using FlaUI.UIA3;
+using FlaUI.Core.Definitions;
+using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Conditions;
 
 public class BrowserUrl {
 
     public static void ReadChrome()
     {
-        DateTime dt = DateTime.Now;
-        Process[] procsChrome = Process.GetProcessesByName("chrome");
+        var dt = DateTime.Now;
+        Process[] procs = Process.GetProcessesByName("chrome");
+        foreach (Process proc in procs)
         {
-            if (chrome.MainWindowHandle == IntPtr.Zero)
+            if (proc.MainWindowHandle == IntPtr.Zero)
             {
                 continue;
             }
-
-            var uia = new UIA.CUIAutomation();
-            var rootCom = uia.GetRootElement();
-
-            // find the automation element
-            AutomationElement elm = AutomationElement.FromHandle(chrome.MainWindowHandle);
-            bool bIncognito = elm.GetCurrentPropertyValue(AutomationElement.NameProperty).ToString().Contains("(Incognito)");
-            if (bIncognito) continue;
-            
-            // manually walk through the tree, searching using TreeScope.Descendants is too slow (even if it's more reliable)
-            AutomationElement elmUrlBar = null;
-            try
+            using (var automation = new UIA3Automation())
             {
-                var elm1 = elm.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Google Chrome"));
+                var app = new FlaUI.Core.Application(proc);
+                var window = app.GetMainWindow(automation);
+                if (window.Name.Contains("(Incognito)")) return;
+
+                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                var elm1 = treewalker.GetLastChild(window);
                 if (elm1 == null) { continue; } // not the right chrome.exe
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get main window
-                var elm2 = TreeWalker.RawViewWalker.GetLastChild(elm1);
+                var elm2 = treewalker.GetLastChild(elm1);
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get header controls
-                var elm3 = TreeWalker.RawViewWalker.GetFirstChild(elm2);
+                var elm3 = treewalker.GetFirstChild(elm2);
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get nav bar
-                var elm4 = TreeWalker.RawViewWalker.GetNextSibling(TreeWalker.RawViewWalker.GetFirstChild(elm3));
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get edit group
-                var elm5 = elm4.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, ""));
+                var elm4 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm3));
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get edit
-                elmUrlBar = elm5.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
-            }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine(ex);
-                continue;
+                var elmUrlBar = elm4.FindFirstChild(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                Console.WriteLine(elmUrlBar.Text);
             }
 
-            // make sure it's valid
-            if (elmUrlBar == null)
-            {
-                // it's not..
-                continue;
-            }
-            System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
-            return;
         }
+        return;
     }
+
     public static void ReadEdge()
     {
         DateTime dt = DateTime.Now;
@@ -71,52 +55,37 @@ public class BrowserUrl {
             {
                 continue;
             }
-
-            // find the automation element
-            AutomationElement elm = AutomationElement.FromHandle(proc.MainWindowHandle);
-            bool bIncognito = elm.GetCurrentPropertyValue(AutomationElement.NameProperty).ToString().Contains("[InPrivate]");
-            if (bIncognito) continue;
-
-            // manually walk through the tree, searching using TreeScope.Descendants is too slow (even if it's more reliable)
-            AutomationElement elmUrlBar = null;
-            try
+            using (var automation = new UIA3Automation())
             {
-                var elm1 = TreeWalker.RawViewWalker.GetLastChild(elm);
+                var app = new FlaUI.Core.Application(proc);
+                var window = app.GetMainWindow(automation);
+                if (window.Name.Contains("[InPrivate]")) return;
+
+                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+
+                var elm1 = treewalker.GetLastChild(window);
                 if (elm1 == null) { continue; } // not the right process
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get main window
-                var elm2 = TreeWalker.RawViewWalker.GetFirstChild(elm1);
+                var elm2 = treewalker.GetFirstChild(elm1);
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get browser window
-                var elm3 = TreeWalker.RawViewWalker.GetNextSibling(TreeWalker.RawViewWalker.GetFirstChild(elm2));
+                var elm3 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm2));
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get header bar
-                var elm4 = TreeWalker.RawViewWalker.GetFirstChild(elm3);
+                var elm4 = treewalker.GetFirstChild(elm3);
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get header bar
-                var elm5 = elm4.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "App bar"));
+                var elm5 = elm4.FindFirstChild(cf => cf.ByName("App bar"));
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get edit group
-                var elm6 = elm5.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ClassNameProperty, "LocationBarView"));
+                var elm6 = elm5.FindFirstChild(cf => cf.ByClassName("LocationBarView"));
                 if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                 // get edit
-                elmUrlBar = elm6.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
+                var elmUrlBar = elm6.FindFirstChild(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                Console.WriteLine(elmUrlBar.Text);
+                return;
             }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine(ex);
-                continue;
-            }
-
-            // make sure it's valid
-            if (elmUrlBar == null)
-            {
-                // it's not..
-                continue;
-            }
-
-            System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
-            return;
         }
     }
 
@@ -129,36 +98,20 @@ public class BrowserUrl {
             {
                 continue;
             }
-
-            // find the automation element
-            AutomationElement elm = AutomationElement.FromHandle(proc.MainWindowHandle);
-
-            // manually walk through the tree, searching using TreeScope.Descendants is too slow (even if it's more reliable)
-            AutomationElement elmUrlBar = null;
-            try
+            using (var automation = new UIA3Automation())
             {
-                var elm1 = elm.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Microsoft Edge"));
+                var app = new FlaUI.Core.Application(proc);
+                var window = app.GetMainWindow(automation);
+                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+
+                var elm1 = window.FindFirstChild(cf => cf.ByName("Microsoft Edge"));
                 if (elm1 == null) { continue; }
 
                 // get edit
-                elmUrlBar = elm1.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
-
+                var elmUrlBar = elm1.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                Console.WriteLine(elmUrlBar.Text);
+                return;
             }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine(ex);
-                continue;
-            }
-
-            // make sure it's valid
-            if (elmUrlBar == null)
-            {
-                // it's not..
-                continue;
-            }
-
-            System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
-            return;
         }
     }
 
@@ -171,37 +124,19 @@ public class BrowserUrl {
             {
                 continue;
             }
-
-            // find the automation element
-            AutomationElement elm = AutomationElement.FromHandle(proc.MainWindowHandle);
-
-            // manually walk through the tree, searching using TreeScope.Descendants is too slow (even if it's more reliable)
-            AutomationElement elmUrlBar = null;
-            try
+            using (var automation = new UIA3Automation())
             {
-                var elm1 = elm.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Navigation"));
+                var app = new FlaUI.Core.Application(proc);
+                var window = app.GetMainWindow(automation);
+                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                var elm1 = window.FindFirstChild(cf => cf.ByName("Navigation"));
                 if (elm1 == null) { continue; }
 
                 // get edit
-                elmUrlBar = elm1.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
+                var elmUrlBar = elm1.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                Console.WriteLine(elmUrlBar.Text);
+                return;
             }
-            catch (Exception ex)
-            {
-                // FF has probably changed something, and above walking needs to be modified. :(
-                // put an assertion here or something to make sure you don't miss it
-                System.Console.WriteLine(ex);
-                continue;
-            }
-
-            // make sure it's valid
-            if (elmUrlBar == null)
-            {
-                // it's not..
-                continue;
-            }
-
-            System.Console.WriteLine(elmUrlBar.GetCurrentPropertyValue(ValuePatternIdentifiers.ValueProperty));
-            return;
         }
     }
     public static void GetAllProcesses()
@@ -214,13 +149,11 @@ public class BrowserUrl {
     }
 
     public static void Main(string[] args) {
-        string browser = args.Length == 0 ? "chrome" : args[0];
+        string browser = args.Length == 0 ? "firefox" : args[0];
 
         if (browser == "chrome")
         {
-            var start = DateTime.Now;
-            for (var i = 0; i < 1; i++) ReadChrome();
-            System.Console.WriteLine("took " + DateTime.Now.Subtract(start).TotalMilliseconds + " ms");
+            ReadChrome();
         }
         else if (browser == "firefox")
         {
