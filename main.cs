@@ -17,30 +17,36 @@ public class BrowserUrl {
             {
                 continue;
             }
-            using (var automation = new UIA3Automation())
+            try
             {
-                var app = new FlaUI.Core.Application(proc);
-                var window = app.GetMainWindow(automation);
-                if (window.Name.Contains("(Incognito)")) return;
+                using (var automation = new UIA3Automation())
+                {
+                    var app = new FlaUI.Core.Application(proc);
+                    var window = app.GetMainWindow(automation);
+                    if (window == null) continue;
+                    if (window.Name.Contains("(Incognito)")) return;
 
-                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
-                var elm1 = treewalker.GetLastChild(window);
-                if (elm1 == null) { continue; } // not the right chrome.exe
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get main window
-                var elm2 = treewalker.GetLastChild(elm1);
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get header controls
-                var elm3 = treewalker.GetFirstChild(elm2);
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get nav bar
-                var elm4 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm3));
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get edit
-                var elmUrlBar = elm4.FindFirstChild(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
-                Console.WriteLine(elmUrlBar.Text);
+                    var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                    var elm1 = treewalker.GetLastChild(window);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get main window
+                    var elm2 = treewalker.GetLastChild(elm1);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get header controls
+                    var elm3 = treewalker.GetFirstChild(elm2);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get nav bar
+                    var elm4 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm3));
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get edit
+                    var elmUrlBar = elm4.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    if (elmUrlBar == null) continue;
+                    Console.WriteLine(elmUrlBar.Text);
+                    return;
+                }
+            } catch (Exception) {
+                continue;
             }
-
         }
         return;
     }
@@ -55,36 +61,43 @@ public class BrowserUrl {
             {
                 continue;
             }
-            using (var automation = new UIA3Automation())
+            try
             {
-                var app = new FlaUI.Core.Application(proc);
-                var window = app.GetMainWindow(automation);
-                if (window.Name.Contains("[InPrivate]")) return;
+                using (var automation = new UIA3Automation())
+                {
+                    var app = new FlaUI.Core.Application(proc);
+                    var window = app.GetMainWindow(automation);
+                    if (window.Name.Contains("[InPrivate]")) return;
 
-                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                    var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
 
-                var elm1 = treewalker.GetLastChild(window);
-                if (elm1 == null) { continue; } // not the right process
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get main window
-                var elm2 = treewalker.GetFirstChild(elm1);
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get browser window
-                var elm3 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm2));
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get header bar
-                var elm4 = treewalker.GetFirstChild(elm3);
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get header bar
-                var elm5 = elm4.FindFirstChild(cf => cf.ByName("App bar"));
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get edit group
-                var elm6 = elm5.FindFirstChild(cf => cf.ByClassName("LocationBarView"));
-                if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                // get edit
-                var elmUrlBar = elm6.FindFirstChild(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
-                Console.WriteLine(elmUrlBar.Text);
-                return;
+                    var elm1 = treewalker.GetLastChild(window);
+                    if (elm1 == null) { continue; } // not the right process
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get main window
+                    var elm2 = treewalker.GetFirstChild(elm1);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get browser window
+                    var elm3 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm2));
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get header bar
+                    var elm4 = treewalker.GetFirstChild(elm3);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get header bar
+                    var elm5 = elm4.FindFirstChild(cf => cf.ByName("App bar"));
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get edit group
+                    var elm6 = elm5.FindFirstChild(cf => cf.ByClassName("LocationBarView"));
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    // get edit
+                    var elmUrlBar = elm6.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    Console.WriteLine(elmUrlBar.Text);
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+                continue;
             }
         }
     }
@@ -98,19 +111,26 @@ public class BrowserUrl {
             {
                 continue;
             }
-            using (var automation = new UIA3Automation())
+            try
             {
-                var app = new FlaUI.Core.Application(proc);
-                var window = app.GetMainWindow(automation);
-                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                 using (var automation = new UIA3Automation())
+                 {
+                    var app = new FlaUI.Core.Application(proc);
+                    var window = app.GetMainWindow(automation);
+                    var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
 
-                var elm1 = window.FindFirstChild(cf => cf.ByName("Microsoft Edge"));
-                if (elm1 == null) { continue; }
+                    var elm1 = window.FindFirstChild(cf => cf.ByName("Microsoft Edge"));
+                    if (elm1 == null) { continue; }
 
-                // get edit
-                var elmUrlBar = elm1.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
-                Console.WriteLine(elmUrlBar.Text);
-                return;
+                    // get edit
+                    var elmUrlBar = elm1.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    Console.WriteLine(elmUrlBar.Text);
+                    return;
+                 }
+            }
+            catch (Exception)
+            {
+                continue;
             }
         }
     }
@@ -124,18 +144,25 @@ public class BrowserUrl {
             {
                 continue;
             }
-            using (var automation = new UIA3Automation())
+            try
             {
-                var app = new FlaUI.Core.Application(proc);
-                var window = app.GetMainWindow(automation);
-                var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
-                var elm1 = window.FindFirstChild(cf => cf.ByName("Navigation"));
-                if (elm1 == null) { continue; }
+                using (var automation = new UIA3Automation())
+                {
+                    var app = new FlaUI.Core.Application(proc);
+                    var window = app.GetMainWindow(automation);
+                    var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                    var elm1 = window.FindFirstChild(cf => cf.ByName("Navigation"));
+                    if (elm1 == null) { continue; }
 
-                // get edit
-                var elmUrlBar = elm1.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
-                Console.WriteLine(elmUrlBar.Text);
-                return;
+                    // get edit
+                    var elmUrlBar = elm1.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    Console.WriteLine(elmUrlBar.Text);
+                    return;
+                }
+            }
+            catch (Exception)
+            {
+                continue;
             }
         }
     }
@@ -149,9 +176,16 @@ public class BrowserUrl {
     }
 
     public static void Main(string[] args) {
-        string browser = args.Length == 0 ? "firefox" : args[0];
+        string browser = args.Length == 0 ? "all" : args[0];
 
-        if (browser == "chrome")
+        if (browser == "all")
+        {
+            ReadChrome();
+            ReadFirefox();
+            ReadEdge();
+            ReadEdgeLegacy();
+        }
+        else if (browser == "chrome")
         {
             ReadChrome();
         }
