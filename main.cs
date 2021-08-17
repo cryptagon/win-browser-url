@@ -7,6 +7,8 @@ using FlaUI.Core.Conditions;
 
 public class BrowserUrl {
 
+    static bool DEBUG = false;
+
     public static void ReadChrome()
     {
         var dt = DateTime.Now;
@@ -35,16 +37,13 @@ public class BrowserUrl {
                     // get header controls
                     var elm3 = treewalker.GetFirstChild(elm2);
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                    // get nav bar
-                    var elm4 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm3));
-                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                     // get edit
-                    var elmUrlBar = elm4.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    var elmUrlBar = elm3.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
                     if (elmUrlBar == null) continue;
                     Console.WriteLine(elmUrlBar.Text);
                     return;
                 }
-            } catch (Exception) {
+            } catch (Exception e) {
                 continue;
             }
         }
@@ -75,22 +74,19 @@ public class BrowserUrl {
                     if (elm1 == null) { continue; } // not the right process
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
                     // get main window
-                    var elm2 = treewalker.GetFirstChild(elm1);
+                    var elm2 = elm1.FindFirstDescendant(cf => cf.ByClassName("TopContainerView"));
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                    // get browser window
-                    var elm3 = treewalker.GetNextSibling(treewalker.GetFirstChild(elm2));
-                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("2 " + elm2);
                     // get header bar
-                    var elm4 = treewalker.GetFirstChild(elm3);
+                    var elm3 = elm2.FindFirstChild(cf => cf.ByName("App bar"));
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
-                    // get header bar
-                    var elm5 = elm4.FindFirstChild(cf => cf.ByName("App bar"));
-                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("3 " + elm3);
                     // get edit group
-                    var elm6 = elm5.FindFirstChild(cf => cf.ByClassName("LocationBarView"));
+                    var elm4 = elm3.FindFirstChild(cf => cf.ByClassName("LocationBarView"));
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("4 " + elm4);
                     // get edit
-                    var elmUrlBar = elm6.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    var elmUrlBar = elm4.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
                     Console.WriteLine(elmUrlBar.Text);
                     return;
                 }
