@@ -31,12 +31,18 @@ public class BrowserUrl {
                     var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
                     var elm1 = treewalker.GetLastChild(window);
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("1 " + elm1);
+                    var elm1Children = elm1.FindAllChildren();
+                    if (elm1Children.Length == 1) elm1 = elm1Children[0];
+
                     // get main window
                     var elm2 = treewalker.GetLastChild(elm1);
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("2 " + elm2);
                     // get header controls
                     var elm3 = treewalker.GetFirstChild(elm2);
                     if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("3 " + elm3);
                     // get edit
                     var elmUrlBar = elm3.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
                     if (elmUrlBar == null) continue;
