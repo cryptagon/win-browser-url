@@ -49,7 +49,57 @@ public class BrowserUrl {
                     Console.WriteLine(elmUrlBar.Text);
                     return;
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
+                continue;
+            }
+        }
+        return;
+    }
+    public static void ReadBrave()
+    {
+        var dt = DateTime.Now;
+        Process[] procs = Process.GetProcessesByName("brave");
+        foreach (Process proc in procs)
+        {
+            if (proc.MainWindowHandle == IntPtr.Zero)
+            {
+                continue;
+            }
+            try
+            {
+                using (var automation = new UIA3Automation())
+                {
+                    var app = new FlaUI.Core.Application(proc);
+                    var window = app.GetMainWindow(automation);
+                    if (window == null) continue;
+                    if (window.Name.Contains("(Private)")) return;
+
+                    var treewalker = automation.TreeWalkerFactory.GetRawViewWalker();
+                    var elm1 = treewalker.GetLastChild(window);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("1 " + elm1);
+                    var elm1Children = elm1.FindAllChildren();
+                    if (elm1Children.Length == 1) elm1 = elm1Children[0];
+
+                    // get main window
+                    var elm2 = treewalker.GetLastChild(elm1);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("2 " + elm2);
+                    // get header controls
+                    var elm3 = treewalker.GetFirstChild(elm2);
+                    if ((DateTime.Now - dt).TotalMilliseconds > 1000) return;
+                    if (BrowserUrl.DEBUG) Console.WriteLine("3 " + elm3);
+                    // get edit
+                    var elmUrlBar = elm3.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit)).AsTextBox();
+                    if (elmUrlBar == null) continue;
+                    Console.WriteLine(elmUrlBar.Text);
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
                 continue;
             }
         }
@@ -183,6 +233,7 @@ public class BrowserUrl {
         if (browser == "all")
         {
             ReadChrome();
+            ReadBrave();
             ReadFirefox();
             ReadEdge();
             ReadEdgeLegacy();
@@ -190,6 +241,10 @@ public class BrowserUrl {
         else if (browser == "chrome")
         {
             ReadChrome();
+        }
+        else if (browser == "brave")
+        {
+            ReadBrave();
         }
         else if (browser == "firefox")
         {
